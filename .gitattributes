@@ -1,0 +1,16 @@
+* text=auto eol=lf
+
+*.blade.php diff=html
+*.css diff=css
+*.html diff=html
+*.md diff=markdown
+*.php diff=php
+
+# Published vendor bundles contain intentional whitespace in template strings.
+public/js/** -whitespace
+public/css/** -whitespace
+
+/.github export-ignore
+*.sh text eol=lf
+CHANGELOG.md export-ignore
+.styleci.yml export-ignore

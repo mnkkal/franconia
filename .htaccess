@@ -1,0 +1,9 @@
+# This Laravel root sits below the storefront's public_html/api directory.
+# Only the public subdirectory may be served over HTTP.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(?!public(?:/|$)) - [F,L,NC]
+</IfModule>
+<IfModule !mod_rewrite.c>
+    Require all denied
+</IfModule>
