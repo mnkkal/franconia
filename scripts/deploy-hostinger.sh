@@ -45,7 +45,7 @@ composer check-platform-reqs --no-dev
 "$PHP_BIN" artisan optimize:clear
 "$PHP_BIN" artisan franconia:backup-database --directory="$BACKUP_DIR"
 "$PHP_BIN" artisan migrate --force
-"$PHP_BIN" artisan db:seed --class=FranconiaBaseSeeder --force
+"$PHP_BIN" artisan franconia:sync-catalogue
 "$PHP_BIN" artisan franconia:update-prices
 "$PHP_BIN" artisan storage:link
 "$PHP_BIN" artisan filament:assets

@@ -20,6 +20,8 @@ PHP 8.3+ (64-bit), Composer 2, MySQL/MariaDB with InnoDB, cron, and the extensio
 
 ## Store operations
 
+- `php artisan franconia:sync-catalogue`: safely add the five website products and missing 20 ml/50 ml variants. Existing data is preserved; new stock starts at zero.
+
 - `php artisan franconia:update-prices`: update the ten known single-bottle prices without reseeding or resetting inventory.
 - `php artisan franconia:maintain`: reconcile captured payments, release expired reservations, retry refunds and send order emails. Cron runs it via `schedule:run` every minute.
 - `php artisan franconia:check-deploy`: check production configuration, database, images, administrator and cron heartbeat.

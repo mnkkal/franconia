@@ -1,0 +1,86 @@
+{
+  "products": [
+    {
+      "slug": "noble",
+      "name": "NOBLE",
+      "desc": "A refined citrus-aromatic composition with lavender, honey and tobacco warmth. Created for quiet confidence — the scent that completes your style without saying a word.",
+      "badges": [
+        "Bestseller",
+        "On Sale"
+      ],
+      "collections": [
+        "best-sellers"
+      ]
+    },
+    {
+      "slug": "blaze",
+      "name": "BLAZE",
+      "desc": "An energetic amber-woody rush — blood orange and pink pepper over magnetic amber. Wear it for the night out, the date, the moment you want to be remembered.",
+      "badges": [
+        "New Launch",
+        "On Sale"
+      ],
+      "collections": [
+        "new-arrivals",
+        "gifting"
+      ]
+    },
+    {
+      "slug": "petals",
+      "name": "PETALS",
+      "desc": "A soft yet mysterious floral — peony and Turkish rose wrapped in dark musk. Elegant restraint with a lingering trail. A quiet moment of me-time, bottled.",
+      "badges": [
+        "Bestseller"
+      ],
+      "collections": [
+        "best-sellers",
+        "gifting"
+      ]
+    },
+    {
+      "slug": "pearls",
+      "name": "PEARLS",
+      "desc": "Luminous white florals with sparkling aldehydes and creamy sandalwood. Sophisticated light — a touch-up after lunch, a fragrance before an important meeting.",
+      "badges": [
+        "New Launch"
+      ],
+      "collections": [
+        "new-arrivals"
+      ]
+    },
+    {
+      "slug": "elixir",
+      "name": "ELIXIR",
+      "desc": "A rich, enveloping oriental — saffron, oud and amber wrapped in vanilla. Sensual depth for nights that become memories. Notify me on launch.",
+      "badges": [
+        "Coming Soon"
+      ],
+      "collections": [
+        "new-arrivals",
+        "gifting"
+      ]
+    }
+  ],
+  "collections": [
+    {
+      "slug": "new-arrivals",
+      "name": "New Arrivals",
+      "desc": "The latest drops from the house — Blaze, Pearls and Elixir."
+    },
+    {
+      "slug": "best-sellers",
+      "name": "Best Sellers",
+      "desc": "Most loved — Noble and Petals, restocked."
+    },
+    {
+      "slug": "combos",
+      "name": "Combos & Offers",
+      "desc": "Curated sets and limited-period offers — more fragrance, better value."
+    },
+    {
+      "slug": "gifting",
+      "name": "Gifting",
+      "desc": "A thoughtful gift for someone you love — or yourself."
+    }
+  ]
+}

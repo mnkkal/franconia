@@ -15,6 +15,11 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         LunarPanel::panel(fn ($panel) => $panel->default()->path('')
+            ->brandName('Franconia Fine Fragrances')
+            ->brandLogo(fn () => asset('branding/franconia-logo.png'))
+            ->darkModeBrandLogo(fn () => asset('branding/franconia-logo-dark.png'))
+            ->brandLogoHeight('3.25rem')
+            ->favicon(fn () => asset('branding/favicon.png'))
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources'))->register();
     }
 
