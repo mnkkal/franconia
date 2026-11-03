@@ -14,7 +14,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        LunarPanel::panel(fn ($panel) => $panel->default()->path('lunar')
+        LunarPanel::panel(fn ($panel) => $panel->default()->path('')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources'))->register();
     }
 

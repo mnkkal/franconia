@@ -4,10 +4,6 @@ use App\Http\Controllers\Api\EngagementController;
 use App\Models\ShopOrder;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return response()->json(['service' => 'Franconia API']);
-});
-
 Route::get('/orders/{reference}/receipt', function (string $reference) {
     $order = ShopOrder::with('items')->where('reference', $reference)->whereNotNull('paid_at')->firstOrFail();
 

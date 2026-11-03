@@ -70,6 +70,7 @@ Make `storage/` and `bootstrap/cache/` writable by PHP using Hostinger's appropr
 php artisan optimize:clear
 php artisan franconia:backup-database --directory=/home/u974495265/franconia-private/backups
 php artisan migrate --force
+php artisan db:seed --class=FranconiaBaseSeeder --force
 ```
 
 For an **empty database only**, run `php artisan db:seed --force` and `php artisan lunar:create-admin`, then verify all real stock/content. For an existing catalogue, use `php artisan franconia:update-prices` instead of reseeding.
@@ -116,7 +117,7 @@ After the public key is authorized, the checkout exists at the application path,
 1. In GitHub → repository Settings → Secrets and variables → Actions → Variables, set `HOSTINGER_DEPLOY_ENABLED=true`.
 2. Open Actions → Backend checks and Hostinger deploy → Run workflow on `main`, or push a subsequent change to `main`.
 3. The deploy step connects to the fixed SSH account/path, obtains a deployment lock, fast-forwards to the exact tested commit, installs locked dependencies, backs up MySQL, runs migrations, synchronizes prices and rebuilds Laravel assets/caches.
-4. It preserves untracked `.env`, media and runtime storage. It never reseeds or runs `migrate:fresh`.
+4. It preserves untracked `.env`, media and runtime storage. It repairs base store settings with the idempotent base seeder; it never reseeds the catalogue or runs `migrate:fresh`.
 5. It checks `/up` and ensures the main domain cannot serve `api/.env`. Review the Actions log before considering a release live.
 
 If deployment fails after maintenance mode is enabled, inspect the failure, restore the prior release/database if needed and run `php artisan up` only once the application is healthy. Backups are retained outside `public_html`; configure retention and off-host/media backups separately.
@@ -136,3 +137,10 @@ You can alternatively connect the repository in hPanel → Advanced → Git. Cho
 Use one deployment mechanism. If GitHub Actions handles deployment, disable hPanel auto-deployment so it cannot change files while the tested deployment script is working. A Git checkout alone does not replace the Composer/migration/cache steps. Follow the initial setup above before enabling automatic updates.
 
 Official guide: https://www.hostinger.com/support/1583302-how-to-deploy-a-git-repository-in-hostinger/
+
+
+## Admin URLs and missing currency
+
+The admin panel has no `/lunar` URL prefix. Login is `https://api.franconia.in/login`, dashboard is `/`, and products are `/products`. The storefront API remains under `/api/`.
+
+If the dashboard/product page reports `Attempt to read property "code" on null`, initialize or repair the default currency with `php artisan db:seed --class=FranconiaBaseSeeder --force`, then run `php artisan optimize:clear`. This sets INR as the enabled default without resetting product stock or prices. Do not run the full catalogue seeder to fix this error.

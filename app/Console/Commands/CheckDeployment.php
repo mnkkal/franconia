@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Lunar\Admin\Models\Staff;
+use Lunar\Models\Currency;
 use Lunar\Models\Product;
 
 class CheckDeployment extends Command
@@ -47,6 +48,7 @@ class CheckDeployment extends Command
             }
             $checks['Stock reservation migration'] = Schema::hasColumn('shop_orders', 'inventory_state');
             $checks['Administrator exists'] = Staff::where('admin', true)->exists();
+            $checks['Default INR currency exists and is enabled'] = Currency::where('code', 'INR')->where('default', true)->where('enabled', true)->exists();
             $checks['Product photographs uploaded'] = Product::where('status', 'published')->whereDoesntHave('images')->count() === 0 && Product::where('status', 'published')->exists();
         } catch (\Throwable $e) {
             $checks['Database and migrations'] = false;

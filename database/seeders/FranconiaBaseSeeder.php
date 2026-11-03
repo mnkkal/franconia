@@ -54,9 +54,11 @@ class FranconiaBaseSeeder extends Seeder
                 'enabled' => true,
             ]
         );
-        // Demote USD if the stock installer created it first.
-        Currency::where('code', 'USD')->where('id', '!=', $inr->id)
+        // Repair partially initialized stores as well as creating fresh ones.
+        // This changes no prices, product content, or stock quantities.
+        Currency::where('id', '!=', $inr->id)
             ->update(['default' => false]);
+        $inr->forceFill(['default' => true, 'enabled' => true])->save();
 
         CustomerGroup::firstOrCreate(
             ['handle' => 'retail'],

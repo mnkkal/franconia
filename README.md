@@ -10,7 +10,7 @@ This repository contains only the backend. The storefront is deployed separately
 | SSH | `ssh -p 65002 u974495265@147.93.17.74` |
 | Application directory | `/home/u974495265/domains/franconia.in/public_html/api` |
 | API document root | `/home/u974495265/domains/franconia.in/public_html/api/public` |
-| Admin | https://api.franconia.in/lunar |
+| Admin | https://api.franconia.in |
 
 See [HOSTINGER.md](HOSTINGER.md) for initial setup and automatic deployment.
 
@@ -25,6 +25,6 @@ PHP 8.3+ (64-bit), Composer 2, MySQL/MariaDB with InnoDB, cron, and the extensio
 - `php artisan franconia:check-deploy`: check production configuration, database, images, administrator and cron heartbeat.
 - `php artisan franconia:backup-database --directory=/home/u974495265/franconia-private/backups`: create a private MySQL dump before migrations. The MySQL dump executable must be available.
 
-The `/lunar` administrator screens include Storefront orders, messages, review moderation and newsletter subscriptions. Prices in `config/byob.json` are authoritative for BYOB SKUs. Public business details are in `config/business.json` with optional environment overrides. Private credentials belong only in the server `.env`.
+The root-level administrator screens include Storefront orders, messages, review moderation and newsletter subscriptions. Prices in `config/byob.json` are authoritative for BYOB SKUs. Public business details are in `config/business.json` with optional environment overrides. Private credentials belong only in the server `.env`.
 
 Never run `migrate:fresh` or reseed an existing shop. Seeders are for a genuinely empty database and reset catalogue stock/content. Back up the database and uploaded media before updating a live shop.
