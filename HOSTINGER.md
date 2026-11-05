@@ -169,3 +169,7 @@ Do not delete `storage/app/public` or an existing real `public/storage` director
 New thumbnails run during upload by default, without a permanent queue worker. If your `.env` explicitly sets `QUEUE_CONVERSIONS_BY_DEFAULT=true`, change it to `false` for this shared-hosting setup, then clear/rebuild config cache. Regeneration requires the GD or Imagick PHP image extension; inspect command errors if thumbnails still fail.
 
 Images are attached to the product being edited. The media display name does not move an image to another product. Upload under the intended product's Media page.
+
+## Replacing an existing product image
+
+Open Products → product → Media → Edit. The optional **Replace image** field accepts JPG, PNG, WebP or GIF up to 10 MB and includes a crop editor. Leave it empty for a name/primary-only edit. Save changes to store the replacement, regenerate thumbnails and preserve the product, primary flag, gallery order and variant links. The new file receives a fresh media URL to avoid stale browser images. The storefront lists the primary image first, then gallery order. This uses an application extension, so no vendor files need editing.

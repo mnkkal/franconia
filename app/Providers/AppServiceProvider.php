@@ -2,10 +2,12 @@
 
 namespace App\Providers;
 
+use App\Filament\Extensions\MediaEditorExtension;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Lunar\Admin\Support\Facades\LunarPanel;
+use Lunar\Admin\Support\RelationManagers\MediaRelationManager;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -14,6 +16,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        LunarPanel::extensions([MediaRelationManager::class => MediaEditorExtension::class]);
         LunarPanel::panel(fn ($panel) => $panel->default()->path('')
             ->brandName('Franconia Fine Fragrances')
             ->brandLogo(fn () => asset('branding/franconia-logo.png'))

@@ -72,7 +72,9 @@ class ProductController extends Controller
             ][strtoupper($tag)] ?? $tag)->values(),
             'collections' => $p->collections->map(fn ($c) => $c->defaultUrl?->slug)->filter()->values(),
             'variants' => $variants,
-            'images' => $p->images->map(fn ($image) => $image->getUrl())->values(),
+            'images' => $p->images->sortBy('order_column')
+                ->sortByDesc(fn ($image) => (bool) $image->getCustomProperty('primary'))
+                ->map(fn ($image) => $image->getUrl())->values(),
             'reviews_count' => Review::where('product_slug', $slug)->where('active', true)->count(),
             'rating' => (float) (Review::where('product_slug', $slug)->where('active', true)->avg('rating') ?? 0),
         ];
