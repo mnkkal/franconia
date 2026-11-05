@@ -1,8 +1,12 @@
 <?php
 
 use App\Http\Controllers\Api\EngagementController;
+use App\Http\Controllers\PublicMediaController;
 use App\Models\ShopOrder;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/storage/{id}/{file}', PublicMediaController::class)
+    ->where('id', '[0-9]+')->where('file', '(?:conversions/)?[^/]+')->name('media.public');
 
 Route::get('/orders/{reference}/receipt', function (string $reference) {
     $order = ShopOrder::with('items')->where('reference', $reference)->whereNotNull('paid_at')->firstOrFail();

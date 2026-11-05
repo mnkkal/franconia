@@ -149,3 +149,22 @@ If the dashboard/product page reports `Attempt to read property "code" on null`,
 ## Franconia branding and website catalogue
 
 The admin logo, dark-mode logo and favicon use the supplied Franconia artwork in `public/branding/`. Run `php artisan franconia:sync-catalogue` after pulling updates to add NOBLE, BLAZE, PETALS, PEARLS and ELIXIR from `config/catalogue.json`, each with 20 ml/50 ml variants and BYOB single-bottle prices. Existing edits, prices, archived records and stock are preserved; new stock starts at zero. Enter actual stock and upload product photos in admin. ELIXIR remains coming soon/out of stock.
+
+## Uploaded images return 404
+
+The storefront reads live media URLs from `/api/products`; no frontend rebuild is needed for image uploads. Uploaded images live in `storage/app/public`, normally exposed by `public/storage`. Ensure `APP_URL=https://api.franconia.in` and `MEDIA_DISK=public` in the private production `.env`.
+
+After pulling this fix:
+
+```bash
+php artisan optimize:clear
+php artisan storage:link
+php artisan media-library:regenerate --only-missing --force
+php artisan config:cache
+```
+
+Do not delete `storage/app/public` or an existing real `public/storage` directory. If the link already exists, continue with the remaining commands. The application now has a `/storage/{id}/{file}` fallback for hosts without a working storage symlink. It only serves registered public raster images and uses the original if a thumbnail is not generated yet. Missing original files still return 404: check that the upload exists under `storage/app/public/<media-id>/` and restore it from backup or re-upload in that case.
+
+New thumbnails run during upload by default, without a permanent queue worker. If your `.env` explicitly sets `QUEUE_CONVERSIONS_BY_DEFAULT=true`, change it to `false` for this shared-hosting setup, then clear/rebuild config cache. Regeneration requires the GD or Imagick PHP image extension; inspect command errors if thumbnails still fail.
+
+Images are attached to the product being edited. The media display name does not move an image to another product. Upload under the intended product's Media page.
