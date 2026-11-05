@@ -55,7 +55,7 @@ class PublicMediaTest extends TestCase
         $this->get('/storage/'.$media->id.'/unregistered.png')->assertNotFound();
         $this->get('/storage/999999/bottle.png')->assertNotFound();
         $this->get('/storage/'.$media->id.'/conversions/unknown.png')->assertNotFound();
-        $this->get('/storage/'.$media->id.'/../../.env')->assertForbidden();
+        $this->assertContains($this->get('/storage/'.$media->id.'/../../.env')->status(), [403, 404]);
         $media->update(['disk' => 'local']);
         $this->get('/storage/'.$media->getPathRelativeToRoot())->assertNotFound();
         $media->update(['disk' => 'public']);

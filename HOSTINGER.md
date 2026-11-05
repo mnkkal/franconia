@@ -157,6 +157,7 @@ The storefront reads live media URLs from `/api/products`; no frontend rebuild i
 After pulling this fix:
 
 ```bash
+composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
 php artisan optimize:clear
 php artisan storage:link
 php artisan media-library:regenerate --only-missing --force
