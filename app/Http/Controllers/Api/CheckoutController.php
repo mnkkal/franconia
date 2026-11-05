@@ -77,7 +77,7 @@ class CheckoutController extends Controller
                 $order->items()->create([
                     'sku' => $variant->sku, 'variant_id' => $variant->sku,
                     'product_name' => $variant->product?->translateAttribute('name') ?? $variant->sku,
-                    'variant_label' => $variant->attribute_data?->get('size')?->getValue(),
+                    'variant_label' => $variant->translateAttribute('size'),
                     'qty' => $line['qty'], 'unit_price' => $line['unit_price'], 'line_total' => $line['line_total'],
                 ]);
             }

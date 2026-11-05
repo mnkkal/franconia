@@ -41,7 +41,6 @@ class ProductController extends Controller
     {
         $inr = Currency::where('code', 'INR')->first();
         $slug = $p->defaultUrl?->slug;
-        $attr = $p->attribute_data;
         $variants = $p->variants->map(function ($v) use ($inr) {
             $price = $v->basePrices->firstWhere('currency_id', $inr?->id)
                 ?? $v->basePrices->first();
@@ -57,7 +56,7 @@ class ProductController extends Controller
             return [
                 'id' => $v->sku ?: (string) $v->id,
                 'sku' => $v->sku,
-                'label' => $v->attribute_data?->get('size')?->getValue() ?? $v->sku,
+                'label' => $v->translateAttribute('size') ?? $v->sku,
                 'price' => $minor ? $minor / 100 : 0,
                 'mrp' => $compare ? $compare / 100 : ($minor ? $minor / 100 : 0),
                 'stock' => $v->purchasable === 'out-of-stock' ? 0 : (int) $v->stock,
@@ -66,8 +65,8 @@ class ProductController extends Controller
 
         $data = [
             'slug' => $slug,
-            'name' => $attr?->get('name')?->getValue(),
-            'description' => strip_tags((string) ($attr?->get('description')?->getValue() ?? '')),
+            'name' => $p->translateAttribute('name'),
+            'description' => strip_tags((string) ($p->translateAttribute('description') ?? '')),
             'badges' => $p->tags->pluck('value')->map(fn ($tag) => [
                 'NEW LAUNCH' => 'New Launch', 'ON SALE' => 'On Sale', 'BESTSELLER' => 'Bestseller', 'COMING SOON' => 'Coming Soon',
             ][strtoupper($tag)] ?? $tag)->values(),

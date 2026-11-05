@@ -12,8 +12,8 @@ class CollectionController extends Controller
     {
         $collections = Collection::with(['defaultUrl', 'products.defaultUrl'])->get()->map(fn ($c) => [
             'slug' => $c->defaultUrl?->slug,
-            'name' => $c->attribute_data?->get('name')?->getValue(),
-            'description' => strip_tags((string) ($c->attribute_data?->get('description')?->getValue() ?? '')),
+            'name' => $c->translateAttribute('name'),
+            'description' => strip_tags((string) ($c->translateAttribute('description') ?? '')),
             'products_count' => $c->products->count(),
         ]);
 
@@ -28,11 +28,11 @@ class CollectionController extends Controller
 
         return response()->json(['data' => [
             'slug' => $collection->defaultUrl?->slug,
-            'name' => $collection->attribute_data?->get('name')?->getValue(),
-            'description' => strip_tags((string) ($collection->attribute_data?->get('description')?->getValue() ?? '')),
+            'name' => $collection->translateAttribute('name'),
+            'description' => strip_tags((string) ($collection->translateAttribute('description') ?? '')),
             'products' => $collection->products->map(fn ($p) => [
                 'slug' => $p->defaultUrl?->slug,
-                'name' => $p->attribute_data?->get('name')?->getValue(),
+                'name' => $p->translateAttribute('name'),
                 'badges' => $p->tags->pluck('value')->values(),
             ])->values(),
         ]]);

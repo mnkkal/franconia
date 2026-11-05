@@ -8,6 +8,7 @@ use Livewire\Livewire;
 use Lunar\Admin\Filament\Resources\ProductResource\Pages\ListProducts;
 use Lunar\Admin\Models\Staff;
 use Lunar\FieldTypes\Text;
+use Lunar\FieldTypes\TranslatedText;
 use Lunar\Models\Collection;
 use Lunar\Models\Currency;
 use Lunar\Models\Product;
@@ -17,6 +18,35 @@ use Tests\TestCase;
 class CatalogueSyncTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_admin_translated_fields_remain_plain_text_in_storefront_responses(): void
+    {
+        $this->artisan('franconia:sync-catalogue')->assertSuccessful();
+        $variant = ProductVariant::where('sku', 'FR-NOB-50')->firstOrFail();
+        $variant->product->update(['attribute_data' => collect([
+            'name' => new TranslatedText(['en' => 'NOBLE']),
+            'description' => new TranslatedText(['en' => '<p>Updated in admin</p>']),
+        ])]);
+        $variant->update(['attribute_data' => collect(['size' => new TranslatedText(['en' => '50ML'])])]);
+        $collection = Collection::whereHas('urls', fn ($q) => $q->where('slug', 'best-sellers'))->firstOrFail();
+        $collection->update(['attribute_data' => collect([
+            'name' => new TranslatedText(['en' => 'Best Sellers']),
+            'description' => new TranslatedText(['en' => '<p>Our favourites</p>']),
+        ])]);
+
+        foreach (['/api/products', '/api/products/noble'] as $url) {
+            $prefix = $url === '/api/products' ? 'data.0' : 'data';
+            $this->getJson($url)->assertOk()
+                ->assertJsonPath($prefix.'.name', 'NOBLE')
+                ->assertJsonPath($prefix.'.description', 'Updated in admin')
+                ->assertJsonPath($prefix.'.variants.0.label', '50ML');
+        }
+        $this->getJson('/api/collections')->assertOk()
+            ->assertJsonFragment(['name' => 'Best Sellers', 'description' => 'Our favourites']);
+        $this->getJson('/api/collections/best-sellers')->assertOk()
+            ->assertJsonPath('data.name', 'Best Sellers')->assertJsonPath('data.description', 'Our favourites')
+            ->assertJsonPath('data.products.0.name', 'NOBLE');
+    }
 
     public function test_empty_store_imports_all_five_website_products_and_correct_variants(): void
     {
