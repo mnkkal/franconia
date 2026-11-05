@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Review;
 use App\Support\ByobPricing;
+use App\Support\VariantSize;
 use Illuminate\Http\JsonResponse;
 use Lunar\Models\Currency;
 use Lunar\Models\Product;
@@ -19,7 +20,7 @@ class ProductController extends Controller
     {
         $products = Product::query()
             ->where('status', 'published')
-            ->with(['defaultUrl', 'tags', 'collections.defaultUrl', 'variants.basePrices.currency', 'images'])
+            ->with(['defaultUrl', 'tags', 'collections.defaultUrl', 'variants.basePrices.currency', 'variants.values.option', 'images'])
             ->get()
             ->map(fn ($p) => $this->serialize($p));
 
@@ -31,7 +32,7 @@ class ProductController extends Controller
         $product = Product::query()
             ->where('status', 'published')
             ->whereHas('urls', fn ($q) => $q->where('slug', $slug))
-            ->with(['defaultUrl', 'tags', 'collections.defaultUrl', 'variants.basePrices.currency', 'images'])
+            ->with(['defaultUrl', 'tags', 'collections.defaultUrl', 'variants.basePrices.currency', 'variants.values.option', 'images'])
             ->firstOrFail();
 
         return response()->json(['data' => $this->serialize($product, true)]);
@@ -56,7 +57,7 @@ class ProductController extends Controller
             return [
                 'id' => $v->sku ?: (string) $v->id,
                 'sku' => $v->sku,
-                'label' => $v->translateAttribute('size') ?? $v->sku,
+                'label' => VariantSize::label($v),
                 'price' => $minor ? $minor / 100 : 0,
                 'mrp' => $compare ? $compare / 100 : ($minor ? $minor / 100 : 0),
                 'stock' => $v->purchasable === 'out-of-stock' ? 0 : (int) $v->stock,

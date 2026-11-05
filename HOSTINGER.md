@@ -173,3 +173,9 @@ Images are attached to the product being edited. The media display name does not
 ## Replacing an existing product image
 
 Open Products → product → Media → Edit. The optional **Replace image** field accepts JPG, PNG, WebP or GIF up to 10 MB and includes a crop editor. Leave it empty for a name/primary-only edit. Save changes to store the replacement, regenerate thumbnails and preserve the product, primary flag, gallery order and variant links. The new file receives a fresh media URL to avoid stale browser images. The storefront lists the primary image first, then gallery order. This uses an application extension, so no vendor files need editing.
+
+## Storefront sizes missing from the admin Variants page
+
+Legacy imports created 20 ml/50 ml variant records but did not attach Lunar product options and option values. Lunar's Variants widget builds its list from those option links. After updating code, run `php artisan franconia:sync-catalogue` to add the missing Size mappings across all five fragrances. The command reuses existing variant IDs, SKUs, prices and stock, preserves archived variants and extra option links, and can be rerun. Conflicting existing Size selections are reported for review without overwriting them.
+
+Refresh Products → product → Variants: Size should contain 50ML and 20ML with the same existing SKUs. Enter actual stock in the variant rows and save variants. The storefront API reads these same records and uses the Size option labels, with legacy attributes as a fallback. Refresh the storefront to see stock changes. No frontend rebuild or full catalogue reseeding is required.

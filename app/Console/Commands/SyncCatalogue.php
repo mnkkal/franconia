@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\SyncSizeOptions;
 use App\Support\ByobPricing;
 use Database\Seeders\FranconiaBaseSeeder;
 use Illuminate\Console\Command;
@@ -99,6 +100,9 @@ class SyncCatalogue extends Command
                     $variant->prices()->firstOrCreate([
                         'currency_id' => $currency->id, 'customer_group_id' => null, 'min_quantity' => 1,
                     ], ['price' => $tier['totals'][1], 'compare_price' => $tier['mrp']]);
+                }
+                foreach (app(SyncSizeOptions::class)->sync($product) as $sku) {
+                    $this->warn($sku.' already has a different Size option; left unchanged. Review it in admin.');
                 }
             }
 

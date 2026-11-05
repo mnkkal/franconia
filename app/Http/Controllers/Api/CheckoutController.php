@@ -7,6 +7,7 @@ use App\Models\ShopOrder;
 use App\Services\OrderLifecycle;
 use App\Services\PaymentGateway;
 use App\Support\ByobPricing;
+use App\Support\VariantSize;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -77,7 +78,7 @@ class CheckoutController extends Controller
                 $order->items()->create([
                     'sku' => $variant->sku, 'variant_id' => $variant->sku,
                     'product_name' => $variant->product?->translateAttribute('name') ?? $variant->sku,
-                    'variant_label' => $variant->translateAttribute('size'),
+                    'variant_label' => VariantSize::label($variant),
                     'qty' => $line['qty'], 'unit_price' => $line['unit_price'], 'line_total' => $line['line_total'],
                 ]);
             }

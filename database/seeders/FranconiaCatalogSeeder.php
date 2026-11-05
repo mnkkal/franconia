@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Services\SyncSizeOptions;
 use Illuminate\Database\Seeder;
 use Lunar\FieldTypes\Text;
 use Lunar\Models\Brand;
@@ -176,6 +177,8 @@ class FranconiaCatalogSeeder extends Seeder
                     'min_quantity' => 1,
                 ]);
             }
+
+            app(SyncSizeOptions::class)->sync($product);
 
             $sync = [];
             foreach ($p['collections'] as $cs) {
