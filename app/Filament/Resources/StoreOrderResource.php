@@ -17,7 +17,14 @@ class StoreOrderResource extends StoreResource
 {
     protected static ?string $model = ShopOrder::class;
 
-    protected static ?string $navigationLabel = 'Storefront orders';
+    protected static ?string $navigationLabel = 'Orders';
+
+    protected static ?string $modelLabel = 'order';
+
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Sales';
+    }
 
     public static function table(Table $table): Table
     {

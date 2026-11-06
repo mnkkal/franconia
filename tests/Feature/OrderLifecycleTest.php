@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Filament\Resources\StoreOrderResource;
 use App\Filament\Resources\StoreOrderResource\Pages\ListStoreOrders;
+use App\Filament\Widgets\WebsiteOrders;
+use App\Filament\Widgets\WebsiteOrderStats;
 use App\Mail\OrderUpdate;
 use App\Models\ShopOrder;
 use App\Services\OrderLifecycle;
@@ -69,6 +71,24 @@ class OrderLifecycleTest extends TestCase
         $this->assertSame('reserved', $order->inventory_state);
         $this->assertEquals($before - 1, ProductVariant::where('sku', 'FR-NOB-20')->value('stock'));
         $this->assertEquals($order->subtotal, $order->items->sum('line_total'));
+    }
+
+    public function test_orders_menu_dashboard_and_old_orders_link_use_the_same_website_orders(): void
+    {
+        $order = $this->checkout();
+        app(OrderLifecycle::class)->captured($order, $this->payment($order));
+        $staff = Staff::create(['first_name' => 'Menu', 'last_name' => 'Admin', 'email' => 'menu@example.com', 'password' => bcrypt('test-password'), 'admin' => true]);
+        $this->actingAs($staff, 'staff');
+        Filament::setCurrentPanel(Filament::getPanel('lunar'));
+        $items = collect(Filament::getCurrentPanel()->buildNavigation())->flatMap(fn ($group) => $group->getItems());
+        $orders = $items->filter(fn ($item) => $item->getLabel() === 'Orders');
+        $this->assertCount(1, $orders);
+        $this->assertSame(StoreOrderResource::getUrl('index'), $orders->first()->getUrl());
+        $this->assertFalse($items->contains(fn ($item) => $item->getLabel() === 'Storefront orders'));
+        $this->get('/orders')->assertRedirect(StoreOrderResource::getUrl('index'));
+        $this->get('/')->assertOk();
+        Livewire::test(WebsiteOrders::class)->assertCanSeeTableRecords([$order]);
+        Livewire::test(WebsiteOrderStats::class)->assertSee('Paid sales');
     }
 
     public function test_single_20ml_launch_order_is_free_shipping_visible_in_admin_and_emails_after_capture(): void
@@ -195,7 +215,7 @@ class OrderLifecycleTest extends TestCase
         $this->actingAs($staff, 'staff');
         $this->get(StoreOrderResource::getUrl('index', panel: 'lunar'))->assertForbidden();
         $staff->update(['admin' => true]);
-        $this->get(StoreOrderResource::getUrl('index', panel: 'lunar'))->assertOk()->assertSee('Storefront orders');
+        $this->get(StoreOrderResource::getUrl('index', panel: 'lunar'))->assertOk()->assertSee('Orders');
     }
 
     public function test_price_update_preserves_stock_and_existing_orders(): void

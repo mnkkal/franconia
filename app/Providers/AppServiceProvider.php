@@ -3,10 +3,16 @@
 namespace App\Providers;
 
 use App\Filament\Extensions\MediaEditorExtension;
+use App\Filament\Extensions\OrdersMenuExtension;
 use App\Filament\Extensions\VariantMediaUploadExtension;
+use App\Filament\Extensions\WebsiteDashboardExtension;
+use App\Filament\OrderNavigation;
+use Filament\Navigation\NavigationBuilder;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Lunar\Admin\Filament\Pages\Dashboard;
+use Lunar\Admin\Filament\Resources\OrderResource;
 use Lunar\Admin\Filament\Resources\ProductVariantResource\Pages\ManageVariantMedia;
 use Lunar\Admin\Support\Facades\LunarPanel;
 use Lunar\Admin\Support\RelationManagers\MediaRelationManager;
@@ -18,9 +24,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        LunarPanel::extensions([
+            OrderResource::class => OrdersMenuExtension::class,
+            Dashboard::class => WebsiteDashboardExtension::class,
+        ]);
         LunarPanel::extensions([ManageVariantMedia::class => VariantMediaUploadExtension::class]);
         LunarPanel::extensions([MediaRelationManager::class => MediaEditorExtension::class]);
         LunarPanel::panel(fn ($panel) => $panel->default()->path('')
+            ->navigation(fn (NavigationBuilder $builder) => OrderNavigation::build($builder))
             ->brandName('Franconia Fine Fragrances')
             ->brandLogo(fn () => asset('branding/franconia-logo.png'))
             ->darkModeBrandLogo(fn () => asset('branding/franconia-logo-dark.png'))

@@ -188,6 +188,11 @@ Under Products → product → Variants, open the 20ML variant and its Media pag
 
 ## Website order and email acceptance
 
-Website checkout writes `ShopOrder` records, visible under **Store operations → Storefront orders** (`/store-orders`), separate from Lunar's native Orders resource. Pending checkout orders appear before payment. Only captured, matching payments become paid. Successful capture and fulfilment updates enter the durable customer email outbox. `franconia:maintain` delivers the outbox and retries failures; the minute scheduler invokes it.
+Website checkout writes `ShopOrder` records, visible under **Sales → Orders** (`/store-orders`). Pending checkout orders appear before payment. Only captured, matching payments become paid. Successful capture and fulfilment updates enter the durable customer email outbox. `franconia:maintain` delivers the outbox and retries failures; the minute scheduler invokes it.
 
 Verify production with `php artisan franconia:check-deploy`. Configure SMTP in the private `.env`, the existing every-minute cron, and the Razorpay captured-payment webhook at `https://api.franconia.in/api/payment/webhook`. After configuration, complete a Razorpay test-mode order using an address you control and verify the record, payment status, receipt and inbox delivery. Mocked integration tests cover this path, but they do not establish production SMTP deliverability. Do not paste payment or SMTP secrets into chat.
+
+
+## Unified orders navigation
+
+Sales → Orders opens the website ShopOrder list. The separate Storefront orders menu is removed, the old /orders address redirects to /store-orders, and dashboard order totals/latest orders use the same website records. No database conversion is required. Paid sales totals include paid, processing, shipped and delivered orders; refunded/review/pending orders are excluded. Dashboard order widgets remain restricted to administrator staff.
