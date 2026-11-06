@@ -179,3 +179,15 @@ Open Products → product → Media → Edit. The optional **Replace image** fie
 Legacy imports created 20 ml/50 ml variant records but did not attach Lunar product options and option values. Lunar's Variants widget builds its list from those option links. After updating code, run `php artisan franconia:sync-catalogue` to add the missing Size mappings across all five fragrances. The command reuses existing variant IDs, SKUs, prices and stock, preserves archived variants and extra option links, and can be rerun. Conflicting existing Size selections are reported for review without overwriting them.
 
 Refresh Products → product → Variants: Size should contain 50ML and 20ML with the same existing SKUs. Enter actual stock in the variant rows and save variants. The storefront API reads these same records and uses the Size option labels, with legacy attributes as a fallback. Refresh the storefront to see stock changes. No frontend rebuild or full catalogue reseeding is required.
+
+## Launch offer and variant photos
+
+After pulling this release, clear configuration cache, run `php artisan franconia:launch`, then rebuild configuration cache. This adds all five products to New Launches without changing stock. Launch shipping is zero for all orders. Upload the matching frontend export as well so displayed totals and shipping copy match checkout.
+
+Under Products → product → Variants, open the 20ML variant and its Media page, then choose **Upload variant photo**. Upload as many photos as needed and choose the primary image there. These photos belong to that variant and are excluded from the default 50ML product gallery. Existing product photos remain the 50ML fallback. The storefront receives variant image arrays and changes its gallery when the size changes.
+
+## Website order and email acceptance
+
+Website checkout writes `ShopOrder` records, visible under **Store operations → Storefront orders** (`/store-orders`), separate from Lunar's native Orders resource. Pending checkout orders appear before payment. Only captured, matching payments become paid. Successful capture and fulfilment updates enter the durable customer email outbox. `franconia:maintain` delivers the outbox and retries failures; the minute scheduler invokes it.
+
+Verify production with `php artisan franconia:check-deploy`. Configure SMTP in the private `.env`, the existing every-minute cron, and the Razorpay captured-payment webhook at `https://api.franconia.in/api/payment/webhook`. After configuration, complete a Razorpay test-mode order using an address you control and verify the record, payment status, receipt and inbox delivery. Mocked integration tests cover this path, but they do not establish production SMTP deliverability. Do not paste payment or SMTP secrets into chat.

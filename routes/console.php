@@ -5,10 +5,25 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schedule;
+use Lunar\Models\Collection;
 use Lunar\Models\Currency;
+use Lunar\Models\Product;
 use Lunar\Models\ProductVariant;
+use Lunar\Models\Tag;
 
 Schedule::command('franconia:maintain')->everyMinute()->withoutOverlapping(15);
+
+Artisan::command('franconia:launch', function () {
+    $this->call('franconia:sync-catalogue');
+    $slugs = collect(json_decode(file_get_contents(config_path('catalogue.json')), true)['products'])->pluck('slug');
+    $collection = Collection::whereHas('urls', fn ($q) => $q->where('slug', 'new-arrivals'))->firstOrFail();
+    $tag = Tag::firstOrCreate(['value' => 'NEW LAUNCH']);
+    foreach (Product::whereHas('urls', fn ($q) => $q->whereIn('slug', $slugs))->get() as $product) {
+        $product->tags()->syncWithoutDetaching([$tag->id]);
+        $product->collections()->syncWithoutDetaching([$collection->id => ['position' => 1]]);
+    }
+    $this->info('All storefront products added to New Launches. Stock preserved.');
+})->purpose('Apply the website launch collection and badges');
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());

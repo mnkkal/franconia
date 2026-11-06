@@ -20,7 +20,7 @@ class ProductController extends Controller
     {
         $products = Product::query()
             ->where('status', 'published')
-            ->with(['defaultUrl', 'tags', 'collections.defaultUrl', 'variants.basePrices.currency', 'variants.values.option', 'images'])
+            ->with(['defaultUrl', 'tags', 'collections.defaultUrl', 'variants.basePrices.currency', 'variants.values.option', 'variants.images', 'images'])
             ->get()
             ->map(fn ($p) => $this->serialize($p));
 
@@ -32,7 +32,7 @@ class ProductController extends Controller
         $product = Product::query()
             ->where('status', 'published')
             ->whereHas('urls', fn ($q) => $q->where('slug', $slug))
-            ->with(['defaultUrl', 'tags', 'collections.defaultUrl', 'variants.basePrices.currency', 'variants.values.option', 'images'])
+            ->with(['defaultUrl', 'tags', 'collections.defaultUrl', 'variants.basePrices.currency', 'variants.values.option', 'variants.images', 'images'])
             ->firstOrFail();
 
         return response()->json(['data' => $this->serialize($product, true)]);
@@ -57,6 +57,7 @@ class ProductController extends Controller
             return [
                 'id' => $v->sku ?: (string) $v->id,
                 'sku' => $v->sku,
+                'images' => $v->images->sortByDesc(fn ($image) => (bool) $image->pivot?->primary)->map(fn ($image) => $image->getUrl())->values(),
                 'label' => VariantSize::label($v),
                 'price' => $minor ? $minor / 100 : 0,
                 'mrp' => $compare ? $compare / 100 : ($minor ? $minor / 100 : 0),
@@ -73,7 +74,7 @@ class ProductController extends Controller
             ][strtoupper($tag)] ?? $tag)->values(),
             'collections' => $p->collections->map(fn ($c) => $c->defaultUrl?->slug)->filter()->values(),
             'variants' => $variants,
-            'images' => $p->images->sortBy('order_column')
+            'images' => $p->images->reject(fn ($image) => $image->getCustomProperty('variant_only'))->sortBy('order_column')
                 ->sortByDesc(fn ($image) => (bool) $image->getCustomProperty('primary'))
                 ->map(fn ($image) => $image->getUrl())->values(),
             'reviews_count' => Review::where('product_slug', $slug)->where('active', true)->count(),

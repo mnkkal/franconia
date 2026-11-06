@@ -3,14 +3,17 @@
 namespace Tests\Feature;
 
 use App\Filament\Resources\StoreOrderResource;
+use App\Filament\Resources\StoreOrderResource\Pages\ListStoreOrders;
 use App\Mail\OrderUpdate;
 use App\Models\ShopOrder;
 use App\Services\OrderLifecycle;
+use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
+use Livewire\Livewire;
 use Lunar\Admin\Models\Staff;
 use Lunar\Models\ProductVariant;
 use Tests\TestCase;
@@ -66,6 +69,22 @@ class OrderLifecycleTest extends TestCase
         $this->assertSame('reserved', $order->inventory_state);
         $this->assertEquals($before - 1, ProductVariant::where('sku', 'FR-NOB-20')->value('stock'));
         $this->assertEquals($order->subtotal, $order->items->sum('line_total'));
+    }
+
+    public function test_single_20ml_launch_order_is_free_shipping_visible_in_admin_and_emails_after_capture(): void
+    {
+        $order = $this->checkout([['sku' => 'FR-NOB-20', 'qty' => 1]]);
+        $this->assertEquals(0, $order->shipping);
+        $this->assertEquals(79900, $order->total);
+        $staff = Staff::create(['first_name' => 'Launch', 'last_name' => 'Admin', 'email' => 'launch@example.com', 'password' => bcrypt('test-password'), 'admin' => true]);
+        $this->actingAs($staff, 'staff');
+        Filament::setCurrentPanel(Filament::getPanel('lunar'));
+        Livewire::test(ListStoreOrders::class)->assertCanSeeTableRecords([$order]);
+        $this->webhook($this->payment($order))->assertOk();
+        Http::fake(['api.razorpay.com/v1/orders/*/payments' => Http::response(['items' => []])]);
+        $this->artisan('franconia:maintain')->assertSuccessful();
+        $this->assertSame('paid', $order->fresh()->status);
+        Mail::assertSent(OrderUpdate::class, fn ($mail) => $mail->hasTo($order->email));
     }
 
     public function test_duplicate_skus_cannot_bypass_stock_check_and_failed_gateway_releases_stock(): void
