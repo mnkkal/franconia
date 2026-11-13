@@ -8,4 +8,7 @@
 <p>Shipping: ₹{{ number_format($order->shipping / 100, 2) }} · Total: ₹{{ number_format($order->total / 100, 2) }}</p>
 <p>Payment: {{ $order->razorpay_payment_id ?? 'Not captured' }} · Refund: {{ $order->refund_id ?? 'None' }} {{ $order->refund_status }}</p>
 <p>Tracking: {{ $order->tracking_number }} {{ $order->tracking_link }}</p>
+@if ($order->delivery_method === 'self')
+<p>Delivered personally by the Franconia team · {{ $order->delivered_at }}</p>
+@endif
 </div>

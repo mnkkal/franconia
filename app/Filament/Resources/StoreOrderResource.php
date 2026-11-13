@@ -9,6 +9,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -42,10 +43,22 @@ class StoreOrderResource extends StoreResource
                 ->modalContent(fn (ShopOrder $record) => view('orders.staff-details', ['order' => $record->load('items')]))->modalSubmitAction(false),
             Action::make('fulfil')->authorize(fn () => static::canViewAny())->visible(fn (ShopOrder $record) => in_array($record->status, ['paid', 'processing', 'shipped']))
                 ->schema([
-                    Select::make('status')->options(['processing' => 'Processing', 'shipped' => 'Shipped', 'delivered' => 'Delivered'])->required(),
-                    TextInput::make('tracking_number')->maxLength(120),
-                    TextInput::make('tracking_link')->url()->maxLength(500),
-                ])->action(fn (ShopOrder $record, array $data) => app(OrderLifecycle::class)->fulfil($record, $data['status'], $data['tracking_number'] ?: null, $data['tracking_link'] ?: null)),
+                    Select::make('status')->options(fn (ShopOrder $record) => match ($record->status) {
+                        'paid' => ['processing' => 'Processing', 'shipped' => 'Shipped'],
+                        'processing' => ['shipped' => 'Shipped'],
+                        'shipped' => ['delivered' => 'Delivered'],
+                        default => [],
+                    })->required()->live()->helperText('For hand delivery, use the Delivered personally action.'),
+                    TextInput::make('tracking_number')->maxLength(120)
+                        ->visible(fn (Get $get) => $get('status') === 'shipped')->required(),
+                    TextInput::make('tracking_link')->url()->maxLength(500)
+                        ->visible(fn (Get $get) => $get('status') === 'shipped')->required(),
+                ])->action(fn (ShopOrder $record, array $data) => app(OrderLifecycle::class)->fulfil($record, $data['status'], $data['tracking_number'] ?? null, $data['tracking_link'] ?? null)),
+            Action::make('deliverPersonally')->label('Delivered personally')->authorize(fn () => static::canViewAny())
+                ->visible(fn (ShopOrder $record) => $record->paid_at && in_array($record->status, ['paid', 'processing', 'shipped']))
+                ->requiresConfirmation()->modalHeading('Confirm personal delivery')
+                ->modalDescription('Confirm that you handed this order to the customer. This marks it Delivered and queues a customer email. Courier tracking is not required.')
+                ->action(fn (ShopOrder $record) => app(OrderLifecycle::class)->deliverPersonally($record)),
             Action::make('refund')->label('Full refund')->color('danger')->authorize(fn () => static::canViewAny())
                 ->visible(fn (ShopOrder $record) => in_array($record->status, ['paid', 'processing', 'shipped', 'delivered', 'payment_review', 'refund_failed']))
                 ->schema([

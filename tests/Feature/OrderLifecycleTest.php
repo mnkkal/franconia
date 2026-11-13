@@ -9,12 +9,14 @@ use App\Filament\Widgets\WebsiteOrderStats;
 use App\Mail\OrderUpdate;
 use App\Models\ShopOrder;
 use App\Services\OrderLifecycle;
+use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
 use Lunar\Admin\Models\Staff;
 use Lunar\Models\ProductVariant;
@@ -71,6 +73,37 @@ class OrderLifecycleTest extends TestCase
         $this->assertSame('reserved', $order->inventory_state);
         $this->assertEquals($before - 1, ProductVariant::where('sku', 'FR-NOB-20')->value('stock'));
         $this->assertEquals($order->subtotal, $order->items->sum('line_total'));
+    }
+
+    public function test_personal_delivery_closes_paid_order_once_without_tracking_or_stock_changes(): void
+    {
+        $order = $this->checkout();
+        $service = app(OrderLifecycle::class);
+        $service->captured($order, $this->payment($order));
+        $stock = ProductVariant::where('sku', 'FR-NOB-20')->value('stock');
+        $staff = Staff::create(['first_name' => 'Delivery', 'last_name' => 'Admin', 'email' => 'delivery@example.com', 'password' => bcrypt('test-password'), 'admin' => true]);
+        $this->actingAs($staff, 'staff');
+        Filament::setCurrentPanel(Filament::getPanel('lunar'));
+        Livewire::test(ListStoreOrders::class)
+            ->callAction(TestAction::make('fulfil')->table($order), ['status' => 'processing'])
+            ->assertHasNoActionErrors()
+            ->callAction(TestAction::make('deliverPersonally')->table($order))
+            ->assertHasNoActionErrors();
+        $service->deliverPersonally($order);
+        $this->assertSame('delivered', $order->fresh()->status);
+        $this->assertSame('self', $order->fresh()->delivery_method);
+        $this->assertNotNull($order->fresh()->delivered_at);
+        $this->assertNull($order->fresh()->tracking_number);
+        $this->assertSame($stock, ProductVariant::where('sku', 'FR-NOB-20')->value('stock'));
+        $this->assertSame(1, DB::table('store_notifications')->where('event', 'delivered')->count());
+        $this->assertStringContainsString('delivered personally', (new OrderUpdate($order->fresh(), 'delivered'))->render());
+    }
+
+    public function test_unpaid_orders_cannot_be_closed_as_personally_delivered(): void
+    {
+        $order = $this->checkout();
+        $this->expectException(ValidationException::class);
+        app(OrderLifecycle::class)->deliverPersonally($order);
     }
 
     public function test_orders_menu_dashboard_and_old_orders_link_use_the_same_website_orders(): void

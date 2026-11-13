@@ -11,7 +11,7 @@ class ShopOrder extends Model
 
     protected function casts(): array
     {
-        return ['paid_at' => 'datetime', 'reservation_expires_at' => 'datetime', 'refunded_at' => 'datetime', 'refund_attempt' => 'integer', 'refund_restock' => 'boolean'];
+        return ['delivered_at' => 'datetime', 'paid_at' => 'datetime', 'reservation_expires_at' => 'datetime', 'refunded_at' => 'datetime', 'refund_attempt' => 'integer', 'refund_restock' => 'boolean'];
     }
 
     public function items(): HasMany

@@ -94,6 +94,24 @@ class OrderLifecycle
         });
     }
 
+    public function deliverPersonally(ShopOrder $order): void
+    {
+        DB::transaction(function () use ($order) {
+            $locked = ShopOrder::lockForUpdate()->findOrFail($order->id);
+            if ($locked->status === 'delivered' && $locked->delivery_method === 'self') {
+                return;
+            }
+            if (! $locked->paid_at || ! in_array($locked->status, ['paid', 'processing', 'shipped'], true)) {
+                throw ValidationException::withMessages(['delivery' => 'Only a confirmed paid order can be marked personally delivered.']);
+            }
+            $locked->forceFill([
+                'status' => 'delivered', 'delivery_method' => 'self', 'delivered_at' => now(),
+                'tracking_number' => null, 'tracking_link' => null,
+            ])->save();
+            $this->notify($locked, 'delivered');
+        });
+    }
+
     public function requestRefund(ShopOrder $order, bool $restock = false, ?string $reason = null): void
     {
         DB::transaction(function () use ($order, $restock, $reason) {

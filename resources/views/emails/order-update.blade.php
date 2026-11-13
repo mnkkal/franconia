@@ -12,7 +12,9 @@
 <tr><td>Shipping</td><td>₹{{ number_format($order->shipping / 100, 2) }}</td></tr>
 <tr><th>Total (GST included)</th><th>₹{{ number_format($order->total / 100, 2) }}</th></tr>
 </table>
-@if ($order->tracking_number)
+@if ($order->delivery_method === 'self' && $event === 'delivered')
+<p>Your order was delivered personally by the Franconia team.</p>
+@elseif ($order->tracking_number)
 <p>Courier tracking: {{ $order->tracking_number }}. <a href="{{ $order->tracking_link }}">Track your parcel</a></p>
 @endif
 <p><a href="{{ $receiptUrl }}">View or print your order receipt</a> (link expires in 30 days).</p>

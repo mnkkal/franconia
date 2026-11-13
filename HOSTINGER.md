@@ -196,3 +196,8 @@ Verify production with `php artisan franconia:check-deploy`. Configure SMTP in t
 ## Unified orders navigation
 
 Sales → Orders opens the website ShopOrder list. The separate Storefront orders menu is removed, the old /orders address redirects to /store-orders, and dashboard order totals/latest orders use the same website records. No database conversion is required. Paid sales totals include paid, processing, shipped and delivered orders; refunded/review/pending orders are excluded. Dashboard order widgets remain restricted to administrator staff.
+
+
+## Personally delivered orders
+
+Run migrations after pulling this update. In Sales → Orders, choose Delivered personally on a paid, processing or shipped order and confirm the handover. No courier details are required. The action records personal delivery and its timestamp, preserves stock/payment data, and queues the delivered customer email through the existing maintenance cron. Pending/unpaid, cancelled and refunded orders cannot use this action. The regular Fulfil action retains the courier workflow.
