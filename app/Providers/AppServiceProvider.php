@@ -7,6 +7,8 @@ use App\Filament\Extensions\OrdersMenuExtension;
 use App\Filament\Extensions\VariantMediaUploadExtension;
 use App\Filament\Extensions\WebsiteDashboardExtension;
 use App\Filament\OrderNavigation;
+use App\Filament\Widgets\WebsiteOrders;
+use App\Filament\Widgets\WebsiteOrderStats;
 use Filament\Navigation\NavigationBuilder;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Support\Facades\RateLimiter;
@@ -31,6 +33,7 @@ class AppServiceProvider extends ServiceProvider
         LunarPanel::extensions([ManageVariantMedia::class => VariantMediaUploadExtension::class]);
         LunarPanel::extensions([MediaRelationManager::class => MediaEditorExtension::class]);
         LunarPanel::panel(fn ($panel) => $panel->default()->path('')
+            ->widgets([WebsiteOrderStats::class, WebsiteOrders::class])
             ->navigation(fn (NavigationBuilder $builder) => OrderNavigation::build($builder))
             ->brandName('Franconia Fine Fragrances')
             ->brandLogo(fn () => asset('branding/franconia-logo.png'))

@@ -201,3 +201,8 @@ Sales → Orders opens the website ShopOrder list. The separate Storefront order
 ## Personally delivered orders
 
 Run migrations after pulling this update. In Sales → Orders, choose Delivered personally on a paid, processing or shipped order and confirm the handover. No courier details are required. The action records personal delivery and its timestamp, preserves stock/payment data, and queues the delivered customer email through the existing maintenance cron. Pending/unpaid, cancelled and refunded orders cannot use this action. The regular Fulfil action retains the courier workflow.
+
+
+## Dashboard widgets fail to load
+
+The website dashboard widgets must be registered on the Filament panel, not only returned by the dashboard extension, so later Livewire requests can resolve them. This is registered in AppServiceProvider. After updating, run php artisan optimize:clear, php artisan filament:clear-cached-components, and php artisan config:cache, then hard-refresh the admin page. No order data or schema changes are needed for this registration fix.

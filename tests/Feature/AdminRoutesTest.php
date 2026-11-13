@@ -2,8 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Widgets\WebsiteOrders;
+use App\Filament\Widgets\WebsiteOrderStats;
 use Database\Seeders\FranconiaBaseSeeder;
+use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Mechanisms\ComponentRegistry;
 use Lunar\Admin\Models\Staff;
 use Lunar\Models\Currency;
 use Lunar\Models\Price;
@@ -51,5 +55,17 @@ class AdminRoutesTest extends TestCase
         $this->assertTrue($currency->enabled);
         $this->assertSame($stock, ProductVariant::orderBy('id')->pluck('stock', 'id')->all());
         $this->assertSame($prices, Price::orderBy('id')->get()->map(fn ($price) => $price->getRawOriginal('price'))->all());
+    }
+
+    public function test_dashboard_widgets_are_registered_for_subsequent_livewire_requests(): void
+    {
+        $staff = Staff::create(['first_name' => 'Widget', 'last_name' => 'Admin', 'email' => 'widgets@example.com', 'password' => bcrypt('test-password'), 'admin' => true]);
+        $this->actingAs($staff, 'staff')->get('/')->assertOk();
+        $panel = Filament::getPanel('lunar');
+        $registry = app(ComponentRegistry::class);
+        foreach ([WebsiteOrders::class, WebsiteOrderStats::class] as $widget) {
+            $this->assertContains($widget, $panel->getWidgets());
+            $this->assertSame($widget, $registry->getClass($registry->getName($widget)));
+        }
     }
 }
