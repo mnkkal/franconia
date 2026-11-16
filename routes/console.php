@@ -13,6 +13,22 @@ use Lunar\Models\Tag;
 
 Schedule::command('franconia:maintain')->everyMinute()->withoutOverlapping(15);
 
+Artisan::command('franconia:release-elixir', function () {
+    DB::transaction(function () {
+        $variants = ProductVariant::whereIn('sku', ['FR-ELI-50', 'FR-ELI-20'])->get();
+        if ($variants->isEmpty()) {
+            throw new RuntimeException('ELIXIR variants not found. Run franconia:sync-catalogue first.');
+        }
+        foreach ($variants as $variant) {
+            $variant->update(['purchasable' => 'in-stock']);
+            $product = $variant->product;
+            $product->tags()->detach(Tag::where('value', 'COMING SOON')->pluck('id'));
+            $product->tags()->syncWithoutDetaching([Tag::firstOrCreate(['value' => 'NEW LAUNCH'])->id]);
+        }
+    });
+    $this->info('ELIXIR enabled for purchase while stock is available. Stock, prices and media preserved.');
+})->purpose('Release ELIXIR from its initial Coming Soon purchase restriction');
+
 Artisan::command('franconia:launch', function () {
     $this->call('franconia:sync-catalogue');
     $slugs = collect(json_decode(file_get_contents(config_path('catalogue.json')), true)['products'])->pluck('slug');

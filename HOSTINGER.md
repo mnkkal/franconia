@@ -206,3 +206,8 @@ Run migrations after pulling this update. In Sales → Orders, choose Delivered 
 ## Dashboard widgets fail to load
 
 The website dashboard widgets must be registered on the Filament panel, not only returned by the dashboard extension, so later Livewire requests can resolve them. This is registered in AppServiceProvider. After updating, run php artisan optimize:clear, php artisan filament:clear-cached-components, and php artisan config:cache, then hard-refresh the admin page. No order data or schema changes are needed for this registration fix.
+
+
+## ELIXIR has stock but remains unavailable
+
+ELIXIR was initially seeded as Coming Soon with purchasable=out-of-stock. Updating the Stock field does not change that explicit purchasing restriction. Once ELIXIR is ready to launch, run php artisan franconia:release-elixir after pulling this release. It changes only the two ELIXIR variants to purchasable=in-stock, removes Coming Soon and adds New Launch. Existing stock, prices, media and product text are preserved. Zero-stock variants remain unavailable. Future regular catalogue syncs preserve the release setting.
